@@ -1,0 +1,831 @@
+{% extends "base.html" %}
+
+{% block title %}{{ subject.name }} - Учебный портал{% endblock %}
+
+{% block styles %}
+<style>
+    .subject-full-page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 30px;
+    }
+
+    /* Навигация сверху */
+    .page-navigation-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .btn-back, .btn-admin {
+        padding: 12px 25px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s;
+    }
+
+    .btn-back {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-back:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+
+    .btn-admin {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-admin:hover {
+        background: #218838;
+        transform: translateY(-2px);
+    }
+
+    .subject-header {
+        background: white;
+        border-radius: 25px;
+        padding: 50px;
+        margin-bottom: 40px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .subject-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: linear-gradient(to right, #667eea, #764ba2, #20c997);
+    }
+
+    .subject-title {
+        color: #333;
+        font-size: 42px;
+        margin: 0 0 20px 0;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .teacher-info {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        border-left: 6px solid #667eea;
+    }
+
+    .teacher-name {
+        font-size: 22px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .teacher-contacts {
+        color: #555;
+        line-height: 1.6;
+        white-space: pre-line;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 15px;
+    }
+
+    /* Навигация по типам материалов */
+    .material-types-nav {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .type-tab {
+        padding: 18px 35px;
+        background: white;
+        border: 2px solid #dee2e6;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .type-tab:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .type-tab.active {
+        border-color: transparent;
+        color: white;
+    }
+
+    .tab-lectures.active { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
+    .tab-practices.active { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+    .tab-tasks.active { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); }
+    .tab-other.active { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); }
+
+    /* Секции материалов */
+    .material-section {
+        background: white;
+        border-radius: 25px;
+        padding: 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        display: none;
+    }
+
+    .material-section.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 3px solid;
+    }
+
+    .lectures-section .section-header { border-color: #007bff; }
+    .practices-section .section-header { border-color: #28a745; }
+    .tasks-section .section-header { border-color: #ffc107; }
+    .other-section .section-header { border-color: #6c757d; }
+
+    .section-title {
+        color: #333;
+        font-size: 28px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .materials-count {
+        background: #f8f9fa;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    /* Список материалов */
+    .materials-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 25px;
+    }
+
+    .material-card {
+        background: #f8f9fa;
+        border-radius: 18px;
+        padding: 30px;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .material-card:hover {
+        background: white;
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+        border-color: #667eea;
+    }
+
+    .material-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 6px;
+        transition: all 0.3s;
+    }
+
+    .lectures-section .material-card::before { background: #007bff; }
+    .practices-section .material-card::before { background: #28a745; }
+    .tasks-section .material-card::before { background: #ffc107; }
+    .other-section .material-card::before { background: #6c757d; }
+
+    .material-card:hover::before {
+        width: 10px;
+    }
+
+    .material-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .material-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+        flex: 1;
+    }
+
+    .material-date {
+        color: #6c757d;
+        font-size: 13px;
+        white-space: nowrap;
+        margin-left: 15px;
+    }
+
+    .material-content {
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .material-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 15px;
+    }
+
+    .btn-view, .btn-download {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+
+    .btn-view {
+        background: #007bff;
+        color: white;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-view:hover {
+        background: #0056b3;
+        transform: translateY(-2px);
+    }
+
+    .btn-download {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-download:hover {
+        background: #218838;
+        transform: translateY(-2px);
+    }
+
+    /* Форма добавления материала */
+    .add-material-form {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        margin-top: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        border: 3px dashed #dee2e6;
+    }
+
+    .add-material-form h3 {
+        color: #333;
+        margin-top: 0;
+        margin-bottom: 25px;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #dee2e6;
+        border-radius: 12px;
+        font-size: 16px;
+        font-family: inherit;
+        transition: all 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: #667eea;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-add {
+        padding: 16px 35px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s;
+    }
+
+    .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Пустые состояния */
+    .empty-section {
+        text-align: center;
+        padding: 60px 30px;
+        color: #6c757d;
+    }
+
+    .empty-icon {
+        font-size: 64px;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .empty-message {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 992px) {
+        .subject-full-page {
+            padding: 20px;
+        }
+
+        .subject-header {
+            padding: 30px;
+        }
+
+        .subject-title {
+            font-size: 32px;
+        }
+
+        .materials-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .material-types-nav {
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .type-tab {
+            white-space: nowrap;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-navigation-top {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn-back, .btn-admin {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .section-header {
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .material-card-header {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .material-date {
+            margin-left: 0;
+            align-self: flex-start;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .subject-title {
+            font-size: 28px;
+        }
+
+        .material-section,
+        .add-material-form {
+            padding: 25px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="subject-full-page">
+    <!-- Навигация сверху -->
+    <div class="page-navigation-top">
+        <a href="{{ url_for('index') }}" class="btn-back">
+            <i class="fas fa-arrow-left"></i>
+            Назад к списку предметов
+        </a>
+
+        {% if current_user.is_admin %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn-admin">
+                <i class="fas fa-cog"></i>
+                Управление предметами
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Заголовок предмета -->
+    <div class="subject-header">
+        <h1 class="subject-title">{{ subject.name }}</h1>
+
+        {% if subject.teacher_name %}
+            <div class="teacher-info">
+                <div class="teacher-name">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Преподаватель: {{ subject.teacher_name }}
+                </div>
+                {% if subject.teacher_contacts %}
+                    <div class="teacher-contacts">
+                        {{ subject.teacher_contacts }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Навигация по типам материалов -->
+    <div class="material-types-nav">
+        <button class="type-tab tab-lectures active" data-section="lectures">
+            <i class="fas fa-chalkboard-teacher"></i>
+            Лекции
+            <span class="materials-count">{{ lectures|length }}</span>
+        </button>
+        <button class="type-tab tab-practices" data-section="practices">
+            <i class="fas fa-laptop-code"></i>
+            Практики
+            <span class="materials-count">{{ practices|length }}</span>
+        </button>
+        <button class="type-tab tab-tasks" data-section="tasks">
+            <i class="fas fa-tasks"></i>
+            Задания
+            <span class="materials-count">{{ tasks|length }}</span>
+        </button>
+        <button class="type-tab tab-other" data-section="other">
+            <i class="fas fa-folder-open"></i>
+            Другое
+            <span class="materials-count">{{ other|length }}</span>
+        </button>
+    </div>
+
+    <!-- Секция лекций -->
+    <section id="lectures-section" class="material-section lectures-section active">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-chalkboard-teacher"></i>
+                Лекционные материалы
+            </h2>
+            <div class="materials-count">{{ lectures|length }} материалов</div>
+        </div>
+
+        {% if lectures %}
+            <div class="materials-grid">
+                {% for material in lectures %}
+                    <a href="{{ url_for('material', material_id=material.id) }}" class="material-card">
+                        <div class="material-card-header">
+                            <h3 class="material-title">{{ material.title }}</h3>
+                            <span class="material-date">{{ material.created_at.strftime('%d.%m.%Y') }}</span>
+                        </div>
+                        {% if material.content %}
+                            <div class="material-content">
+                                {{ material.content[:150] }}{% if material.content|length > 150 %}...{% endif %}
+                            </div>
+                        {% endif %}
+                        <div class="material-actions">
+                            <span class="btn-view">Открыть</span>
+                            {% if material.file_path %}
+                                <span class="btn-download">Скачать</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-section">
+                <div class="empty-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <p class="empty-message">Лекционные материалы пока не добавлены</p>
+                {% if current_user.is_admin %}
+                    <p>Добавьте первую лекцию с помощью формы ниже</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Секция практик -->
+    <section id="practices-section" class="material-section practices-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-laptop-code"></i>
+                Практические работы
+            </h2>
+            <div class="materials-count">{{ practices|length }} материалов</div>
+        </div>
+
+        {% if practices %}
+            <div class="materials-grid">
+                {% for material in practices %}
+                    <a href="{{ url_for('material', material_id=material.id) }}" class="material-card">
+                        <div class="material-card-header">
+                            <h3 class="material-title">{{ material.title }}</h3>
+                            <span class="material-date">{{ material.created_at.strftime('%d.%m.%Y') }}</span>
+                        </div>
+                        {% if material.content %}
+                            <div class="material-content">
+                                {{ material.content[:150] }}{% if material.content|length > 150 %}...{% endif %}
+                            </div>
+                        {% endif %}
+                        <div class="material-actions">
+                            <span class="btn-view">Открыть</span>
+                            {% if material.file_path %}
+                                <span class="btn-download">Скачать</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-section">
+                <div class="empty-icon">
+                    <i class="fas fa-laptop-code"></i>
+                </div>
+                <p class="empty-message">Практические работы пока не добавлены</p>
+                {% if current_user.is_admin %}
+                    <p>Добавьте первую практическую работу с помощью формы ниже</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Секция заданий -->
+    <section id="tasks-section" class="material-section tasks-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-tasks"></i>
+                Задания
+            </h2>
+            <div class="materials-count">{{ tasks|length }} материалов</div>
+        </div>
+
+        {% if tasks %}
+            <div class="materials-grid">
+                {% for material in tasks %}
+                    <a href="{{ url_for('material', material_id=material.id) }}" class="material-card">
+                        <div class="material-card-header">
+                            <h3 class="material-title">{{ material.title }}</h3>
+                            <span class="material-date">{{ material.created_at.strftime('%d.%m.%Y') }}</span>
+                        </div>
+                        {% if material.content %}
+                            <div class="material-content">
+                                {{ material.content[:150] }}{% if material.content|length > 150 %}...{% endif %}
+                            </div>
+                        {% endif %}
+                        <div class="material-actions">
+                            <span class="btn-view">Открыть</span>
+                            {% if material.file_path %}
+                                <span class="btn-download">Скачать</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-section">
+                <div class="empty-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <p class="empty-message">Задания пока не добавлены</p>
+                {% if current_user.is_admin %}
+                    <p>Добавьте первое задание с помощью формы ниже</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Секция другого -->
+    <section id="other-section" class="material-section other-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-folder-open"></i>
+                Дополнительные материалы
+            </h2>
+            <div class="materials-count">{{ other|length }} материалов</div>
+        </div>
+
+        {% if other %}
+            <div class="materials-grid">
+                {% for material in other %}
+                    <a href="{{ url_for('material', material_id=material.id) }}" class="material-card">
+                        <div class="material-card-header">
+                            <h3 class="material-title">{{ material.title }}</h3>
+                            <span class="material-date">{{ material.created_at.strftime('%d.%m.%Y') }}</span>
+                        </div>
+                        {% if material.content %}
+                            <div class="material-content">
+                                {{ material.content[:150] }}{% if material.content|length > 150 %}...{% endif %}
+                            </div>
+                        {% endif %}
+                        <div class="material-actions">
+                            <span class="btn-view">Открыть</span>
+                            {% if material.file_path %}
+                                <span class="btn-download">Скачать</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-section">
+                <div class="empty-icon">
+                    <i class="fas fa-folder-open"></i>
+                </div>
+                <p class="empty-message">Дополнительные материалы пока не добавлены</p>
+                {% if current_user.is_admin %}
+                    <p>Добавьте дополнительные материалы с помощью формы ниже</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Форма добавления материала (только для админа) -->
+    {% if current_user.is_admin %}
+        <div class="add-material-form">
+            <h3><i class="fas fa-plus-circle"></i> Добавить новый материал</h3>
+            <form method="POST" action="{{ url_for('add_material') }}" enctype="multipart/form-data" id="addMaterialForm">
+                <input type="hidden" name="subject_id" value="{{ subject.id }}">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Тип материала:</label>
+                        <select name="material_type" required id="materialType">
+                            <option value="">Выберите тип</option>
+                            <option value="lectures">Лекция</option>
+                            <option value="practices">Практическая работа</option>
+                            <option value="tasks">Задание</option>
+                            <option value="other">Дополнительный материал</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Название материала:</label>
+                        <input type="text" name="title" placeholder="Введите название" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Описание:</label>
+                    <textarea name="content" placeholder="Введите описание материала" rows="4"></textarea>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Файл (опционально):</label>
+                        <input type="file" name="file" id="materialFile">
+                        <small style="display: block; margin-top: 5px; color: #6c757d;">
+                            Поддерживаемые форматы: PDF, PNG, JPG, DOCX, TXT, PPTX, ZIP
+                        </small>
+                    </div>
+
+                    <div class="form-group" style="align-self: flex-end;">
+                        <button type="submit" class="btn-add">
+                            <i class="fas fa-upload"></i>
+                            Добавить материал
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Переключение между секциями материалов
+document.querySelectorAll('.type-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        // Убираем активный класс у всех вкладок
+        document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+        // Скрываем все секции
+        document.querySelectorAll('.material-section').forEach(s => s.classList.remove('active'));
+
+        // Активируем текущую вкладку
+        this.classList.add('active');
+        // Показываем соответствующую секцию
+        const sectionId = this.dataset.section + '-section';
+        document.getElementById(sectionId).classList.add('active');
+    });
+});
+
+// Автоматический выбор типа материала в форме
+document.querySelectorAll('.type-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        const materialType = this.dataset.section;
+        document.getElementById('materialType').value = materialType;
+    });
+});
+
+// Очистка формы после успешной отправки
+document.getElementById('addMaterialForm')?.addEventListener('submit', function() {
+    setTimeout(() => {
+        this.reset();
+        // Показываем уведомление об успешном добавлении
+        const activeTab = document.querySelector('.type-tab.active');
+        if (activeTab) {
+            const section = activeTab.dataset.section + '-section';
+            document.getElementById(section).scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 100);
+});
+
+// Показ размера файла при выборе
+document.getElementById('materialFile')?.addEventListener('change', function() {
+    if (this.files.length > 0) {
+        const file = this.files[0];
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        const fileName = file.name.length > 30 ? file.name.substring(0, 27) + '...' : file.name;
+
+        // Обновляем текст подсказки
+        const label = this.nextElementSibling;
+        label.innerHTML = `Выбран файл: ${fileName} (${sizeMB} MB)<br>Поддерживаемые форматы: PDF, PNG, JPG, DOCX, TXT, PPTX, ZIP`;
+    }
+});
+</script>
+{% endblock %}

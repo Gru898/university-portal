@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Вход - Учебный портал{% endblock %}
+
+{% block styles %}
+<style>
+    .login-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .login-card {
+        background: white;
+        border-radius: 20px;
+        padding: 50px;
+        width: 100%;
+        max-width: 450px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .login-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .login-logo {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 36px;
+        margin: 0 auto 20px;
+    }
+    
+    .login-header h1 {
+        color: #333;
+        margin: 0 0 10px 0;
+        font-size: 28px;
+    }
+    
+    .login-header p {
+        color: #6c757d;
+        margin: 0;
+        font-size: 15px;
+    }
+    
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+    
+    .input-group {
+        position: relative;
+    }
+    
+    .input-icon {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-size: 18px;
+        z-index: 1;
+    }
+    
+    .login-form input {
+        width: 100%;
+        padding: 16px 16px 16px 50px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        font-size: 16px;
+        transition: all 0.3s;
+        background: #f8f9fa;
+    }
+    
+    .login-form input:focus {
+        border-color: #667eea;
+        background: white;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .login-form input::placeholder {
+        color: #adb5bd;
+    }
+    
+    .login-btn {
+        padding: 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 10px;
+    }
+    
+    .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .login-footer {
+        margin-top: 30px;
+        padding-top: 25px;
+        border-top: 2px solid #f0f0f0;
+        text-align: center;
+    }
+    
+    .login-footer p {
+        color: #6c757d;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+    
+    .test-accounts {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .test-account {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        margin: 8px 0;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .account-info {
+        flex: 1;
+    }
+    
+    .account-role {
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+    }
+    
+    .account-credentials {
+        font-size: 13px;
+        color: #6c757d;
+    }
+    
+    .copy-btn {
+        padding: 6px 12px;
+        background: #e9ecef;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        color: #495057;
+        transition: all 0.3s;
+    }
+    
+    .copy-btn:hover {
+        background: #dee2e6;
+    }
+    
+    .warning {
+        background: #fff3cd;
+        color: #856404;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 13px;
+        border: 1px solid #ffeaa7;
+        margin-top: 15px;
+    }
+    
+    .register-link {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s;
+    }
+    
+    .register-link:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+    
+    @media (max-width: 480px) {
+        .login-card {
+            padding: 30px 25px;
+        }
+        
+        .login-header h1 {
+            font-size: 24px;
+        }
+        
+        .test-account {
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        
+        .copy-btn {
+            align-self: flex-end;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h1>Добро пожаловать</h1>
+            <p>Войдите в учебный портал</p>
+        </div>
+        
+        <form method="POST" class="login-form">
+            <div class="input-group">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" name="username" placeholder="Имя пользователя" required>
+            </div>
+            
+            <div class="input-group">
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" name="password" placeholder="Пароль" required>
+            </div>
+            
+            <button type="submit" class="login-btn">Войти в систему</button>
+        </form>
+        
+        <div class="login-footer">
+            <p>Нет аккаунта? <a href="{{ url_for('register') }}" class="register-link">Зарегистрироваться</a></p>
+            
+            <div class="test-accounts">
+                <p style="margin: 0 0 15px 0; font-weight: 600; color: #333;">Тестовые аккаунты:</p>
+                
+                <div class="test-account">
+                    <div class="account-info">
+                        <div class="account-role">Администратор</div>
+                        <div class="account-credentials">admin / admin123</div>
+                    </div>
+                    <button class="copy-btn" onclick="copyCredentials('admin', 'admin123')">
+                        <i class="fas fa-copy"></i> Копировать
+                    </button>
+                </div>
+                
+                <div class="test-account">
+                    <div class="account-info">
+                        <div class="account-role">Студент</div>
+                        <div class="account-credentials">student / student123</div>
+                    </div>
+                    <button class="copy-btn" onclick="copyCredentials('student', 'student123')">
+                        <i class="fas fa-copy"></i> Копировать
+                    </button>
+                </div>
+            </div>
+            
+            <div class="warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong> Важно:</strong> Смените пароли по умолчанию в файле app.py после первого входа!
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyCredentials(username, password) {
+    const text = `Имя пользователя: ${username}\nПароль: ${password}`;
+    
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Данные для входа скопированы в буфер обмена!');
+    }).catch(function(err) {
+        console.error('Ошибка копирования: ', err);
+        // Fallback для старых браузеров
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Данные для входа скопированы в буфер обмена!');
+    });
+}
+</script>
+{% endblock %}
